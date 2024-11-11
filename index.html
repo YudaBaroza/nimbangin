@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Hasil Panen</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #d9e3f0, #f4f4f4);
+            overflow-x: hidden; /* Menghindari scroll horizontal */
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            padding: 10px;
+            width: calc(100% - 30px);
+            margin-right: 10px;
+            border: 2px solid #28a745;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus {
+            border-color: #218838;
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+            outline: none;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            font-size: 1em;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd; /* Garis pada tabel */
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        th {
+            background-color: #28a745;
+            color: white;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+        td {
+            font-size: 1em;
+            color: #555;
+        }
+        td:hover {
+            background-color: #f1f1f1;
+        }
+        tbody tr {
+            transition: transform 0.3s;
+        }
+        tbody tr:hover {
+            transform: scale(1.02);
+            background-color: #f9f9f9; /* Efek hover pada baris tabel */
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+            font-size: 1.5em;
+            transition: color 0.3s;
+        }
+        #tabelContainer {
+            max-height: 300px; /* Tinggi maksimum untuk tabel */
+            overflow-y: auto; /* Mengaktifkan scrollbar vertikal */
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-top: 10px;
+            transition: box-shadow 0.3s;
+        }
+        #tabelContainer:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Kalkulator Hasil Panen  JM</h1>
+
+        <label for="beratPadi">Berat Padi (kg)/Karung:</label>
+        <input type="number" id="beratPadi" placeholder="Masukkan berat padi" required>
+        <button onclick="tambahData()">Tambahkan Data</button>
+        <button onclick="simpanData()">Simpan Data ke Excel</button>
+        <button onclick="resetData()">Reset</button>
+
+        <div id="tabelContainer">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Berat Padi (kg)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelHasil">
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Total Hasil Panen: <span id="totalHasil">0</span> kg</h2>
+    </div>
+
+    <script>
+        let total = 0;
+        let nomor = 1;
+
+        // Fungsi untuk menambah data
+        function tambahData() {
+            const input = document.getElementById('beratPadi');
+            const beratPadi = parseFloat(input.value);
+
+            if (!isNaN(beratPadi) && beratPadi > 0) {
+                // Menambahkan data ke tabel
+                const tabelHasil = document.getElementById('tabelHasil');
+                const row = tabelHasil.insertRow();
+
+                const cellNo = row.insertCell(0);
+                const cellBerat = row.insertCell(1);
+                const cellAksi = row.insertCell(2);
+
+                cellNo.textContent = nomor++;
+                cellBerat.textContent = beratPadi;
+
+                // Tombol Hapus
+                const hapusButton = document.createElement('button');
+                hapusButton.textContent = 'Hapus';
+                hapusButton.style.backgroundColor = '#dc3545'; // Warna merah
+                hapusButton.style.marginTop = '0';
+                hapusButton.onclick = function() {
+                    // Menghapus baris
+                    total -= beratPadi; // Kurangi total
+                    document.getElementById('totalHasil').textContent = total;
+                    tabelHasil.deleteRow(row.rowIndex - 1); // Hapus baris
+                    nomor--; // Mengurangi nomor urut
+                    updateNomor(); // Memperbarui nomor urut di tabel
+                };
+                
+                cellAksi.appendChild(hapusButton);
+
+                // Menghitung total
+                total += beratPadi;
+                document.getElementById('totalHasil').textContent = total;
+
+                // Mengosongkan input
+                input.value = '';
+
+                // Scroll otomatis ke bawah tabel
+                const tabelContainer = document.getElementById('tabelContainer');
+                tabelContainer.scrollTop = tabelContainer.scrollHeight; // Mengatur scroll ke bawah
+            } else {
+                alert('Masukkan berat padi yang valid!');
+            }
+        }
+
+        // Fungsi untuk memperbarui nomor urut
+        function updateNomor() {
+            const tabelHasil = document.getElementById('tabelHasil');
+            for (let i = 0; i < tabelHasil.rows.length; i++) {
+                tabelHasil.rows[i].cells[0].textContent = i + 1; // Memperbarui nomor urut
+            }
+        }
+
+        // Menangkap event keydown untuk tombol "Enter"
+        document.getElementById('beratPadi').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                tambahData();
+            }
+        });
+
+        // Fungsi untuk menyimpan data ke file Excel
+        function simpanData() {
+            const tabelHasil = document.getElementById('tabelHasil');
+            const data = [];
+            data.push(["No", "Berat Padi (kg)", "Aksi"]); // Header
+
+            for (let i = 0; i < tabelHasil.rows.length; i++) {
+                const row = tabelHasil.rows[i];
+                const rowData = [];
+                for (let j = 0; j < row.cells.length - 1; j++) { // Jangan ambil kolom aksi
+                    rowData.push(row.cells[j].textContent);
+                }
+                data.push(rowData);
+            }
+
+            const worksheet = XLSX.utils.aoa_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Hasil Panen");
+
+            // Simpan file Excel
+            XLSX.writeFile(workbook, "Hasil_Panen.xlsx");
+        }
+
+        // Fungsi untuk mereset data
+        function resetData() {
+            document.getElementById('tabelHasil').innerHTML = '';
+            total = 0;
+            nomor = 1;
+            document.getElementById('totalHasil').textContent = total;
+        }
+    </script>
+</body>
+</html>
